@@ -25,6 +25,7 @@ export default function PostEditor() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [dirty, setDirty] = useState(false)
 
   useEffect(() => {
     if (isEdit) {
@@ -32,7 +33,20 @@ export default function PostEditor() {
     }
   }, [slug, isEdit])
 
-  const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (!dirty) return
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', handleBeforeUnload)
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload)
+  }, [dirty])
+
+  const set = (k, v) => {
+    setDirty(true)
+    setForm(f => ({ ...f, [k]: v }))
+  }
 
   const handleTitleChange = (v) => {
     set('title', v)
@@ -46,10 +60,12 @@ export default function PostEditor() {
     try {
       if (isEdit) {
         await axios.put(`/api/posts/${slug}`, form)
+        setDirty(false)
         setSuccess('文章已更新！')
         setTimeout(() => navigate(`/post/${slug}`), 800)
       } else {
         const res = await axios.post('/api/posts', form)
+        setDirty(false)
         setSuccess('文章已發布！')
         setTimeout(() => navigate(`/post/${res.data.slug}`), 800)
       }
@@ -64,15 +80,18 @@ export default function PostEditor() {
     <div className="container">
       <Link to="/" className="back-link">← 回首頁</Link>
       <div className="editor-page">
-        <h2>{isEdit ? '✏️ 編輯文章' : '📝 新增文章'}</h2>
+        <h2>{isEdit ? '編輯文章' : '新增文章'}</h2>
 
-        {error && <div className="alert alert-danger">{error}</div>}
-        {success && <div className="alert alert-success">{success}</div>}
+        <div aria-live="polite">
+          {error && <div className="alert alert-danger">{error}</div>}
+          {success && <div className="alert alert-success">{success}</div>}
+        </div>
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
-            <label>標題 *</label>
+            <label htmlFor="post-title">標題 *</label>
             <input
+              id="post-title"
               className="form-control"
               value={form.title}
               onChange={e => handleTitleChange(e.target.value)}
@@ -83,8 +102,9 @@ export default function PostEditor() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>Slug（網址）*</label>
+              <label htmlFor="post-slug">Slug（網址）*</label>
               <input
+                id="post-slug"
                 className="form-control"
                 value={form.slug}
                 onChange={e => set('slug', e.target.value)}
@@ -93,8 +113,9 @@ export default function PostEditor() {
               />
             </div>
             <div className="form-group">
-              <label>分類</label>
+              <label htmlFor="post-category">分類</label>
               <input
+                id="post-category"
                 className="form-control"
                 value={form.category}
                 onChange={e => set('category', e.target.value)}
@@ -104,8 +125,9 @@ export default function PostEditor() {
           </div>
 
           <div className="form-group">
-            <label>摘要</label>
+            <label htmlFor="post-summary">摘要</label>
             <input
+              id="post-summary"
               className="form-control"
               value={form.summary}
               onChange={e => set('summary', e.target.value)}
@@ -114,8 +136,9 @@ export default function PostEditor() {
           </div>
 
           <div className="form-group">
-            <label>標籤（逗號分隔）</label>
+            <label htmlFor="post-tags">標籤（逗號分隔）</label>
             <input
+              id="post-tags"
               className="form-control"
               value={form.tags}
               onChange={e => set('tags', e.target.value)}
@@ -124,8 +147,9 @@ export default function PostEditor() {
           </div>
 
           <div className="form-group">
-            <label>內容（支援 Markdown）*</label>
+            <label htmlFor="post-content">內容（支援 Markdown）*</label>
             <textarea
+              id="post-content"
               className="form-control"
               rows={18}
               value={form.content}
@@ -149,7 +173,7 @@ export default function PostEditor() {
 
           <div style={{ display: 'flex', gap: '.75rem' }}>
             <button type="submit" className="btn btn-primary" disabled={loading}>
-              {loading ? '儲存中…' : isEdit ? '💾 儲存更改' : '🚀 發布文章'}
+              {loading ? '儲存中…' : isEdit ? '儲存更改' : '發布文章'}
             </button>
             <button type="button" className="btn btn-outline" onClick={() => navigate(-1)}>
               取消

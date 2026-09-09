@@ -7,6 +7,7 @@ export default function About() {
   const [editing, setEditing] = useState(false)
   const [form, setForm] = useState({})
   const [msg, setMsg] = useState('')
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     axios.get('/api/about')
@@ -19,14 +20,17 @@ export default function About() {
 
   const handleSave = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
       const res = await axios.put('/api/about', form)
       setAbout(res.data)
       setEditing(false)
-      setMsg('✅ 已儲存！')
+      setMsg('已儲存！')
       setTimeout(() => setMsg(''), 2000)
     } catch {
-      setMsg('❌ 儲存失敗')
+      setMsg('儲存失敗')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -36,33 +40,35 @@ export default function About() {
     return (
       <div className="container">
         <div className="editor-page">
-          <h2>✍️ 關於我</h2>
-          {msg && <div className="alert alert-success">{msg}</div>}
+          <h2>關於我</h2>
+          <div aria-live="polite">
+            {msg && <div className="alert alert-success">{msg}</div>}
+          </div>
           <form onSubmit={handleSave}>
             <div className="form-group">
-              <label>姓名 *</label>
-              <input className="form-control" value={form.name || ''} onChange={e => set('name', e.target.value)} required />
+              <label htmlFor="about-name">姓名 *</label>
+              <input id="about-name" className="form-control" value={form.name || ''} onChange={e => set('name', e.target.value)} required />
             </div>
             <div className="form-group">
-              <label>個人簡介</label>
-              <textarea className="form-control" rows={5} value={form.bio || ''} onChange={e => set('bio', e.target.value)} />
+              <label htmlFor="about-bio">個人簡介</label>
+              <textarea id="about-bio" className="form-control" rows={5} value={form.bio || ''} onChange={e => set('bio', e.target.value)} />
             </div>
             <div className="form-group">
-              <label>頭像 URL</label>
-              <input className="form-control" value={form.avatar_url || ''} onChange={e => set('avatar_url', e.target.value)} placeholder="https://..." />
+              <label htmlFor="about-avatar">頭像 URL</label>
+              <input id="about-avatar" className="form-control" value={form.avatar_url || ''} onChange={e => set('avatar_url', e.target.value)} placeholder="https://..." />
             </div>
             <div className="form-row">
               <div className="form-group">
-                <label>GitHub</label>
-                <input className="form-control" value={form.github || ''} onChange={e => set('github', e.target.value)} placeholder="https://github.com/..." />
+                <label htmlFor="about-github">GitHub</label>
+                <input id="about-github" className="form-control" value={form.github || ''} onChange={e => set('github', e.target.value)} placeholder="https://github.com/..." />
               </div>
               <div className="form-group">
-                <label>Email</label>
-                <input className="form-control" value={form.email || ''} onChange={e => set('email', e.target.value)} placeholder="you@example.com" />
+                <label htmlFor="about-email">Email</label>
+                <input id="about-email" className="form-control" value={form.email || ''} onChange={e => set('email', e.target.value)} placeholder="you@example.com" />
               </div>
             </div>
             <div style={{ display: 'flex', gap: '.75rem' }}>
-              <button type="submit" className="btn btn-primary">💾 儲存</button>
+              <button type="submit" className="btn btn-primary" disabled={saving}>{saving ? '儲存中…' : '儲存'}</button>
               {about && <button type="button" className="btn btn-outline" onClick={() => setEditing(false)}>取消</button>}
             </div>
           </form>
@@ -73,31 +79,33 @@ export default function About() {
 
   return (
     <div className="container">
-      {msg && <div className="alert alert-success" style={{ maxWidth: 640, margin: '0 auto 1rem' }}>{msg}</div>}
+      <div aria-live="polite">
+        {msg && <div className="alert alert-success" style={{ maxWidth: 640, margin: '0 auto 1rem' }}>{msg}</div>}
+      </div>
       <div className="about-card">
         {about.avatar_url && (
-          <img src={about.avatar_url} alt="avatar" className="about-avatar" />
+          <img src={about.avatar_url} alt={about.name} width="120" height="120" className="about-avatar" />
         )}
         <div className="about-name">{about.name}</div>
         {about.bio && <p className="about-bio">{about.bio}</p>}
         <div className="about-links">
           {about.github && (
             <a href={about.github} target="_blank" rel="noreferrer" className="about-link">
-              🐙 GitHub
+              GitHub
             </a>
           )}
           {about.twitter && (
             <a href={about.twitter} target="_blank" rel="noreferrer" className="about-link">
-              🐦 Twitter
+              Twitter
             </a>
           )}
           {about.email && (
             <a href={`mailto:${about.email}`} className="about-link">
-              📧 Email
+              Email
             </a>
           )}
           <button className="about-link btn" style={{ cursor: 'pointer' }} onClick={() => setEditing(true)}>
-            ✏️ 編輯
+            編輯
           </button>
         </div>
       </div>

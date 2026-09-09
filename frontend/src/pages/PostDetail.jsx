@@ -45,20 +45,24 @@ export default function PostDetail() {
           <div className="post-header-category">{post.category}</div>
           <h1>{post.title}</h1>
           <div className="post-header-meta">
-            <span>🗓 {format(new Date(post.created_at), 'yyyy年M月d日 HH:mm', { locale: zhTW })}</span>
+            <span>{format(new Date(post.created_at), 'yyyy年M月d日 HH:mm', { locale: zhTW })}</span>
             {post.tags && (
-              <span>🏷 {post.tags.split(',').filter(Boolean).map(t => t.trim()).join(' · ')}</span>
+              <div className="card-tags">
+                {post.tags.split(',').filter(Boolean).map(t => (
+                  <span key={t} className="tag">{t.trim()}</span>
+                ))}
+              </div>
             )}
           </div>
         </header>
 
         {/* 操作按鈕 */}
         <div className="post-actions">
-          <button className="btn btn-outline" onClick={() => navigate(`/edit/${slug}`)}>
-            ✏️ 編輯
-          </button>
+          <Link className="btn btn-outline" to={`/edit/${slug}`}>
+            編輯
+          </Link>
           <button className="btn btn-danger" onClick={handleDelete}>
-            🗑 刪除
+            刪除
           </button>
         </div>
 

@@ -1,16 +1,15 @@
 import { useState, useEffect, useCallback } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
 import { format } from 'date-fns'
 import { zhTW } from 'date-fns/locale'
 
 export default function Home() {
   const [posts, setPosts] = useState([])
-  const [categories, setCategories] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
-  const [activeCategory, setActiveCategory] = useState('')
-  const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const activeCategory = searchParams.get('category') || ''
 
   const fetchPosts = useCallback(async () => {
     setLoading(true)
@@ -32,10 +31,6 @@ export default function Home() {
     return () => clearTimeout(t)
   }, [fetchPosts])
 
-  useEffect(() => {
-    axios.get('/api/categories').then(r => setCategories(r.data))
-  }, [])
-
   const formatDate = (d) =>
     d ? format(new Date(d), 'yyyy年M月d日', { locale: zhTW }) : ''
 
@@ -44,34 +39,25 @@ export default function Home() {
       {/* Hero */}
       <div className="hero">
         <h1>歡迎來到 <span>MyBlog</span></h1>
-        <p>分享程式開發、技術心得與生活隨筆</p>
+        {activeCategory ? (
+          <p>
+            分類：{activeCategory}
+            <Link to="/" className="hero-clear">清除篩選</Link>
+          </p>
+        ) : (
+          <p>分享程式開發、技術心得與生活隨筆</p>
+        )}
       </div>
 
-      {/* Search & Filter */}
+      {/* Search */}
       <div className="search-bar">
         <input
           className="search-input"
-          placeholder="🔍 搜尋文章..."
+          aria-label="搜尋文章"
+          placeholder="搜尋文章…"
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <div className="category-pills">
-          <button
-            className={'pill' + (!activeCategory ? ' active' : '')}
-            onClick={() => setActiveCategory('')}
-          >
-            全部
-          </button>
-          {categories.map(c => (
-            <button
-              key={c}
-              className={'pill' + (activeCategory === c ? ' active' : '')}
-              onClick={() => setActiveCategory(c === activeCategory ? '' : c)}
-            >
-              {c}
-            </button>
-          ))}
-        </div>
       </div>
 
       {/* Posts */}
@@ -82,10 +68,10 @@ export default function Home() {
       ) : (
         <div className="post-grid">
           {posts.map(post => (
-            <div
+            <Link
               key={post.id}
+              to={`/post/${post.slug}`}
               className="post-card"
-              onClick={() => navigate(`/post/${post.slug}`)}
             >
               <div className="card-category">{post.category}</div>
               <div className="card-title">{post.title}</div>
@@ -102,7 +88,7 @@ export default function Home() {
               <div className="card-meta">
                 <span>{formatDate(post.created_at)}</span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
