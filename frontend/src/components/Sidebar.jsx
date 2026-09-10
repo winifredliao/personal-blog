@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react'
-import { Link, NavLink, useSearchParams } from 'react-router-dom'
+import { Link, NavLink, useNavigate, useSearchParams } from 'react-router-dom'
 import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
 
 export default function Sidebar({ open, onNavigate }) {
   const [categories, setCategories] = useState([])
   const [searchParams] = useSearchParams()
   const activeCategory = searchParams.get('category') || ''
+  const { isAuthenticated, logout } = useAuth()
+  const navigate = useNavigate()
+
+  const handleLogout = () => {
+    logout()
+    onNavigate()
+    navigate('/')
+  }
 
   useEffect(() => {
     axios.get('/api/categories').then(r => setCategories(r.data))
@@ -47,9 +56,16 @@ export default function Sidebar({ open, onNavigate }) {
         關於我
       </NavLink>
 
-      <Link to="/new" className="sidebar-new" onClick={onNavigate}>
-        新文章
-      </Link>
+      {isAuthenticated && (
+        <>
+          <Link to="/new" className="sidebar-new" onClick={onNavigate}>
+            新文章
+          </Link>
+          <button type="button" className="sidebar-link sidebar-logout" onClick={handleLogout}>
+            登出
+          </button>
+        </>
+      )}
     </nav>
   )
 }

@@ -3,6 +3,8 @@ services:
     build: ./backend
     environment:
       - DATABASE_URL=sqlite:////app/data/blog.db
+      - SECRET_KEY=${SECRET_KEY:-}
+      - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}
     volumes:
       - backend_data:/app/data
     ports:

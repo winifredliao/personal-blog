@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List, Optional
 import models, schemas
+import auth
 from database import engine, get_db, Base
 
 # ── 初始化資料庫 ───────────────────────────────────────────
@@ -152,7 +153,7 @@ def get_post(slug: str, db: Session = Depends(get_db)):
 
 
 @app.post("/api/posts", response_model=schemas.PostOut, status_code=201)
-def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
+def create_post(post: schemas.PostCreate, db: Session = Depends(get_db), _admin: str = Depends(auth.get_current_admin)):
     existing = db.query(models.Post).filter(models.Post.slug == post.slug).first()
     if existing:
         raise HTTPException(status_code=400, detail="Slug 已被使用")
@@ -164,7 +165,7 @@ def create_post(post: schemas.PostCreate, db: Session = Depends(get_db)):
 
 
 @app.put("/api/posts/{slug}", response_model=schemas.PostOut)
-def update_post(slug: str, post_update: schemas.PostUpdate, db: Session = Depends(get_db)):
+def update_post(slug: str, post_update: schemas.PostUpdate, db: Session = Depends(get_db), _admin: str = Depends(auth.get_current_admin)):
     post = db.query(models.Post).filter(models.Post.slug == slug).first()
     if not post:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -176,7 +177,7 @@ def update_post(slug: str, post_update: schemas.PostUpdate, db: Session = Depend
 
 
 @app.delete("/api/posts/{slug}", status_code=204)
-def delete_post(slug: str, db: Session = Depends(get_db)):
+def delete_post(slug: str, db: Session = Depends(get_db), _admin: str = Depends(auth.get_current_admin)):
     post = db.query(models.Post).filter(models.Post.slug == slug).first()
     if not post:
         raise HTTPException(status_code=404, detail="文章不存在")
@@ -203,7 +204,7 @@ def get_about(db: Session = Depends(get_db)):
 
 
 @app.put("/api/about", response_model=schemas.AboutOut)
-def update_about(about_data: schemas.AboutCreate, db: Session = Depends(get_db)):
+def update_about(about_data: schemas.AboutCreate, db: Session = Depends(get_db), _admin: str = Depends(auth.get_current_admin)):
     about = db.query(models.About).first()
     if about:
         for field, value in about_data.model_dump().items():
@@ -214,6 +215,22 @@ def update_about(about_data: schemas.AboutCreate, db: Session = Depends(get_db))
     db.commit()
     db.refresh(about)
     return about
+
+
+# ══════════════════════════════════════════════════════════
+#  Auth 路由
+# ══════════════════════════════════════════════════════════
+
+@app.post("/api/auth/login", response_model=schemas.TokenOut)
+def login(credentials: schemas.LoginRequest):
+    if not auth.verify_password(credentials.password):
+        raise HTTPException(status_code=401, detail="密碼錯誤")
+    return schemas.TokenOut(access_token=auth.create_access_token())
+
+
+@app.get("/api/auth/me")
+def read_current_admin(admin: str = Depends(auth.get_current_admin)):
+    return {"username": admin}
 
 
 # ── 健康檢查 ───────────────────────────────────────────────

@@ -7,10 +7,12 @@ import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import axios from 'axios'
 import { format } from 'date-fns'
 import { zhTW } from 'date-fns/locale'
+import { useAuth } from '../context/AuthContext'
 
 export default function PostDetail() {
   const { slug } = useParams()
   const navigate = useNavigate()
+  const { isAuthenticated } = useAuth()
   const [post, setPost] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
@@ -57,14 +59,16 @@ export default function PostDetail() {
         </header>
 
         {/* 操作按鈕 */}
-        <div className="post-actions">
-          <Link className="btn btn-outline" to={`/edit/${slug}`}>
-            編輯
-          </Link>
-          <button className="btn btn-danger" onClick={handleDelete}>
-            刪除
-          </button>
-        </div>
+        {isAuthenticated && (
+          <div className="post-actions">
+            <Link className="btn btn-outline" to={`/edit/${slug}`}>
+              編輯
+            </Link>
+            <button className="btn btn-danger" onClick={handleDelete}>
+              刪除
+            </button>
+          </div>
+        )}
 
         {/* Markdown 內容 */}
         <div className="markdown-body">

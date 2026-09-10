@@ -3,10 +3,12 @@ import { Routes, Route, useLocation } from 'react-router-dom'
 import Navbar from './components/Navbar'
 import Sidebar from './components/Sidebar'
 import Footer from './components/Footer'
+import ProtectedRoute from './components/ProtectedRoute'
 import Home from './pages/Home'
 import PostDetail from './pages/PostDetail'
 import PostEditor from './pages/PostEditor'
 import About from './pages/About'
+import Login from './pages/Login'
 
 export default function App() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -40,9 +42,10 @@ export default function App() {
           <Routes>
             <Route path="/" element={<Home />} />
             <Route path="/post/:slug" element={<PostDetail />} />
-            <Route path="/new" element={<PostEditor />} />
-            <Route path="/edit/:slug" element={<PostEditor />} />
+            <Route path="/new" element={<ProtectedRoute><PostEditor /></ProtectedRoute>} />
+            <Route path="/edit/:slug" element={<ProtectedRoute><PostEditor /></ProtectedRoute>} />
             <Route path="/about" element={<About />} />
+            <Route path="/login" element={<Login />} />
           </Routes>
         </main>
         <Footer />

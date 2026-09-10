@@ -57,3 +57,13 @@ class AboutOut(AboutBase):
 
     class Config:
         from_attributes = True
+
+
+# ── Auth Schemas ──────────────────────────────────────────
+class LoginRequest(BaseModel):
+    password: str
+
+
+class TokenOut(BaseModel):
+    access_token: str
+    token_type: str = "bearer"

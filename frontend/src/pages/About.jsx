@@ -1,7 +1,10 @@
 import { useState, useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import axios from 'axios'
+import { useAuth } from '../context/AuthContext'
 
 export default function About() {
+  const { isAuthenticated } = useAuth()
   const [about, setAbout] = useState(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
@@ -12,9 +15,9 @@ export default function About() {
   useEffect(() => {
     axios.get('/api/about')
       .then(r => { setAbout(r.data); setForm(r.data) })
-      .catch(() => setEditing(true))
+      .catch(() => { if (isAuthenticated) setEditing(true) })
       .finally(() => setLoading(false))
-  }, [])
+  }, [isAuthenticated])
 
   const set = (k, v) => setForm(f => ({ ...f, [k]: v }))
 
@@ -35,6 +38,19 @@ export default function About() {
   }
 
   if (loading) return <div className="loading">載入中…</div>
+
+  if (!about && !editing) {
+    return (
+      <div className="container">
+        <div className="empty">尚未設定關於我資訊</div>
+        {!isAuthenticated && (
+          <div style={{ textAlign: 'center' }}>
+            <Link to="/login" className="about-link">管理員登入</Link>
+          </div>
+        )}
+      </div>
+    )
+  }
 
   if (editing) {
     return (
@@ -104,9 +120,15 @@ export default function About() {
               Email
             </a>
           )}
-          <button className="about-link btn" style={{ cursor: 'pointer' }} onClick={() => setEditing(true)}>
-            編輯
-          </button>
+          {isAuthenticated ? (
+            <button className="about-link btn" style={{ cursor: 'pointer' }} onClick={() => setEditing(true)}>
+              編輯
+            </button>
+          ) : (
+            <Link to="/login" className="about-link">
+              管理員登入
+            </Link>
+          )}
         </div>
       </div>
     </div>
