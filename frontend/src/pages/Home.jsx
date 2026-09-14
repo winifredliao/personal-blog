@@ -38,7 +38,7 @@ export default function Home() {
     <div className="container-wide">
       {/* Hero */}
       <div className="hero">
-        <h1>歡迎來到 <span>MyBlog</span></h1>
+        <h1>Winnie's Blog</h1>
         {activeCategory ? (
           <p>
             分類：{activeCategory}

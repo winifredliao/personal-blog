@@ -23,7 +23,7 @@ export default function Sidebar({ open, onNavigate }) {
   return (
     <nav id="sidebar" className={'sidebar' + (open ? ' open' : '')} aria-label="主要導覽">
       <Link to="/" className="sidebar-brand" onClick={onNavigate}>
-        My<span>Blog</span>
+        Winnie's Blog
       </Link>
 
       <NavLink
