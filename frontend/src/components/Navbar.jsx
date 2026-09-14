@@ -16,7 +16,7 @@ export default function Navbar({ onMenuClick, menuOpen }) {
         <span />
       </button>
       <Link to="/" className="navbar-brand">
-        My<span>Blog</span>
+        Winnie's Blog
       </Link>
     </div>
   )

@@ -57,14 +57,14 @@ export default function Sidebar({ open, onNavigate }) {
       </NavLink>
 
       {isAuthenticated && (
-        <>
+        <div className="sidebar-actions">
           <Link to="/new" className="sidebar-new" onClick={onNavigate}>
             新文章
           </Link>
           <button type="button" className="sidebar-link sidebar-logout" onClick={handleLogout}>
             登出
           </button>
-        </>
+        </div>
       )}
     </nav>
   )
