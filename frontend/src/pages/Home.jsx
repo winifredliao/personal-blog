@@ -38,14 +38,13 @@ export default function Home() {
     <div className="container-wide">
       {/* Hero */}
       <div className="hero">
-        <h1>Winnie's Blog</h1>
         {activeCategory ? (
-          <p>
-            分類：{activeCategory}
-            <Link to="/" className="hero-clear">清除篩選</Link>
-          </p>
+          <h1>{activeCategory}</h1>
         ) : (
-          <p>分享程式開發、技術心得與生活隨筆</p>
+          <>
+            <h1>Winnie's Blog</h1>
+            <p>分享程式開發、技術心得與生活隨筆</p>
+          </>
         )}
       </div>
 
