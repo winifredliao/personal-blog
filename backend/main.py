@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Depends, HTTPException, Query
+from fastapi import FastAPI, Depends, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
@@ -19,104 +19,8 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["X-Total-Count"],
 )
-
-
-# ── 啟動時寫入預設範例資料 ─────────────────────────────────
-@app.on_event("startup")
-def seed_data():
-    db = next(get_db())
-    if db.query(models.Post).count() == 0:
-        sample_posts = [
-            models.Post(
-                title="歡迎來到我的 Blog！",
-                slug="welcome",
-                summary="這是我的第一篇文章，介紹這個 Blog 的用途。",
-                content="""## 你好，世界！
-
-歡迎來到我的個人 Blog。這裡會記錄我在程式開發、技術學習以及生活上的點點滴滴。
-
-### 這個 Blog 使用的技術
-
-- **後端**：Python + FastAPI
-- **前端**：React + Vite
-- **資料庫**：SQLite
-
-希望你會喜歡這裡的內容，歡迎留言交流！""",
-                category="公告",
-                tags="歡迎,介紹",
-            ),
-            models.Post(
-                title="FastAPI 入門教學",
-                slug="fastapi-intro",
-                summary="快速了解 FastAPI 的核心概念，打造高效能的 REST API。",
-                content="""## FastAPI 是什麼？
-
-FastAPI 是一個現代、快速的 Python Web 框架，專門用於建構 API。
-
-### 特色
-
-1. **高效能** — 媲美 Node.js 和 Go
-2. **自動文件** — 自動產生 OpenAPI 文件
-3. **型別提示** — 利用 Python type hints 驗證資料
-
-### 快速開始
-
-```python
-from fastapi import FastAPI
-
-app = FastAPI()
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-```
-
-執行：`uvicorn main:app --reload`，然後打開 `http://localhost:8000/docs` 查看互動文件！""",
-                category="技術",
-                tags="Python,FastAPI,教學",
-            ),
-            models.Post(
-                title="React + Vite 開發體驗",
-                slug="react-vite",
-                summary="為什麼 Vite 讓 React 開發變得如此愉快？",
-                content="""## Vite 改變了前端開發
-
-傳統的 Create React App 啟動速度慢、HMR 不穩定。Vite 用 ESM 原生模組解決了這些痛點。
-
-### 核心優勢
-
-- ⚡ **極速冷啟動** — 不需要打包整個專案
-- 🔥 **即時 HMR** — 模組替換毫秒級
-- 📦 **生產打包** — 使用 Rollup 優化輸出
-
-### 建立專案
-
-```bash
-npm create vite@latest my-blog -- --template react
-cd my-blog
-npm install
-npm run dev
-```
-
-搭配 FastAPI 後端，就是一套完整的全端方案！""",
-                category="技術",
-                tags="React,Vite,前端",
-            ),
-        ]
-        db.add_all(sample_posts)
-
-        about = models.About(
-            name="Blog 作者",
-            bio="熱愛程式開發與技術分享的工程師，專注於 Python 與 React 全端開發。",
-            avatar_url="https://api.dicebear.com/7.x/avataaars/svg?seed=blog",
-            github="https://github.com",
-            email="blog@example.com",
-        )
-        db.add(about)
-        db.commit()
-    db.close()
-
 
 # ══════════════════════════════════════════════════════════
 #  Posts 路由
@@ -124,8 +28,9 @@ npm run dev
 
 @app.get("/api/posts", response_model=List[schemas.PostOut])
 def list_posts(
+    response: Response,
     skip: int = 0,
-    limit: int = 20,
+    limit: int = 15,
     category: Optional[str] = None,
     search: Optional[str] = None,
     db: Session = Depends(get_db),
@@ -141,6 +46,7 @@ def list_posts(
                 models.Post.summary.contains(search),
             )
         )
+    response.headers["X-Total-Count"] = str(q.count())
     return q.order_by(models.Post.created_at.desc()).offset(skip).limit(limit).all()
 
 

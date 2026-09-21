@@ -143,7 +143,7 @@ img { max-width: 100%; border-radius: var(--radius); }
 /* ── Post Grid ────────────────────────────────────────── */
 .post-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: 1fr;
   gap: 1.5rem;
 }
 .post-card {
@@ -178,6 +178,13 @@ img { max-width: 100%; border-radius: var(--radius); }
   background: var(--bg3); color: var(--ink-muted);
   padding: .15rem .55rem; border-radius: 10px; font-size: .75rem;
 }
+
+/* ── Pagination ───────────────────────────────────────── */
+.pagination {
+  display: flex; align-items: center; justify-content: center;
+  gap: 1.25rem; margin-top: 2.5rem;
+}
+.pagination-status { color: var(--ink-muted); font-size: .875rem; }
 
 /* ── Post Detail ──────────────────────────────────────── */
 .post-detail { max-width: 720px; margin: 0 auto; }
@@ -240,6 +247,8 @@ textarea.form-control { resize: vertical; font-family: var(--mono); font-size: .
 .btn-outline:hover { border-color: var(--ink); color: var(--ink); }
 .btn-danger { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
 .btn-danger:hover { background: var(--danger); color: #14120d; }
+.btn:disabled { opacity: .4; cursor: not-allowed; }
+.btn:disabled:hover { background: transparent; border-color: var(--border); color: var(--ink-muted); }
 
 /* ── About Page ───────────────────────────────────────── */
 .about-card {

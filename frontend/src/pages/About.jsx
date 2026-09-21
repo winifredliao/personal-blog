@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
 import axios from 'axios'
 import { useAuth } from '../context/AuthContext'
 
@@ -43,11 +42,6 @@ export default function About() {
     return (
       <div className="container">
         <div className="empty">尚未設定關於我資訊</div>
-        {!isAuthenticated && (
-          <div style={{ textAlign: 'center' }}>
-            <Link to="/login" className="about-link">管理員登入</Link>
-          </div>
-        )}
       </div>
     )
   }
@@ -120,14 +114,10 @@ export default function About() {
               Email
             </a>
           )}
-          {isAuthenticated ? (
+          {isAuthenticated && (
             <button className="about-link btn" style={{ cursor: 'pointer' }} onClick={() => setEditing(true)}>
               編輯
             </button>
-          ) : (
-            <Link to="/login" className="about-link">
-              管理員登入
-            </Link>
           )}
         </div>
       </div>
