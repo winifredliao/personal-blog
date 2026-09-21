@@ -26,15 +26,6 @@ export default function Sidebar({ open, onNavigate }) {
         Winnie's Blog
       </Link>
 
-      <NavLink
-        to="/"
-        end
-        className={({ isActive }) => 'sidebar-link' + (isActive && !activeCategory ? ' active' : '')}
-        onClick={onNavigate}
-      >
-        全部文章
-      </NavLink>
-
       <div className="sidebar-section-title">文章分類</div>
       {categories.map(c => (
         <Link
