@@ -5,10 +5,11 @@ services:
       - DATABASE_URL=sqlite:////app/data/blog.db
       - SECRET_KEY=${SECRET_KEY:-}
       - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
     volumes:
       - backend_data:/app/data
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
 
   frontend:
     build: ./frontend

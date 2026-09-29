@@ -1,3 +1,5 @@
+import os
+
 from fastapi import FastAPI, Depends, HTTPException, Query, Response
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
@@ -12,10 +14,14 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Personal Blog API", version="1.0.0")
 
-# ── CORS（允許 React dev server）───────────────────────────
+# ── CORS ───────────────────────────────────────────────────
+# ALLOWED_ORIGINS 可用逗號分隔多個網址，例如正式環境的 Cloudflare Pages 網址。
+_default_origins = "http://localhost:5173,http://localhost:3000"
+allowed_origins = [o.strip() for o in (os.getenv("ALLOWED_ORIGINS") or _default_origins).split(",") if o.strip()]
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:3000"],
+    allow_origins=allowed_origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
