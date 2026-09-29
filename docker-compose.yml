@@ -6,6 +6,11 @@ services:
       - SECRET_KEY=${SECRET_KEY:-}
       - ADMIN_PASSWORD_HASH=${ADMIN_PASSWORD_HASH:-}
       - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-}
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID:-}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID:-}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY:-}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME:-}
+      - R2_PUBLIC_URL=${R2_PUBLIC_URL:-}
     volumes:
       - backend_data:/app/data
     ports:

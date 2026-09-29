@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import axios from 'axios'
 
@@ -26,6 +26,8 @@ export default function PostEditor() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [dirty, setDirty] = useState(false)
+  const [uploading, setUploading] = useState(false)
+  const contentRef = useRef(null)
 
   useEffect(() => {
     if (isEdit) {
@@ -51,6 +53,34 @@ export default function PostEditor() {
   const handleTitleChange = (v) => {
     set('title', v)
     if (!isEdit) set('slug', toSlug(v))
+  }
+
+  const handleImageUpload = async (e) => {
+    const file = e.target.files[0]
+    e.target.value = ''
+    if (!file) return
+    setUploading(true)
+    setError('')
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await axios.post('/api/uploads/image', formData)
+      const markdown = `![](${res.data.url})`
+      const textarea = contentRef.current
+      const start = textarea.selectionStart
+      const end = textarea.selectionEnd
+      const newContent = form.content.slice(0, start) + markdown + form.content.slice(end)
+      set('content', newContent)
+      requestAnimationFrame(() => {
+        const pos = start + markdown.length
+        textarea.focus()
+        textarea.setSelectionRange(pos, pos)
+      })
+    } catch (err) {
+      setError(err.response?.data?.detail || '圖片上傳失敗')
+    } finally {
+      setUploading(false)
+    }
   }
 
   const handleSubmit = async (e) => {
@@ -148,8 +178,15 @@ export default function PostEditor() {
 
           <div className="form-group">
             <label htmlFor="post-content">內容（支援 Markdown）*</label>
+            <div className="editor-toolbar">
+              <label className="btn btn-outline btn-upload">
+                {uploading ? '上傳中…' : '插入圖片'}
+                <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} hidden />
+              </label>
+            </div>
             <textarea
               id="post-content"
+              ref={contentRef}
               className="form-control"
               rows={18}
               value={form.content}

@@ -1,12 +1,13 @@
 import os
 
-from fastapi import FastAPI, Depends, HTTPException, Query, Response
+from fastapi import FastAPI, Depends, HTTPException, Query, Response, UploadFile, File
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy import or_
 from typing import List, Optional
 import models, schemas
 import auth
+import storage
 from database import engine, get_db, Base
 
 # ── 初始化資料庫 ───────────────────────────────────────────
@@ -101,6 +102,29 @@ def delete_post(slug: str, db: Session = Depends(get_db), _admin: str = Depends(
 def list_categories(db: Session = Depends(get_db)):
     rows = db.query(models.Post.category).filter(models.Post.published == True).distinct().all()
     return [r[0] for r in rows if r[0]]
+
+
+# ══════════════════════════════════════════════════════════
+#  圖片上傳（Cloudflare R2）
+# ══════════════════════════════════════════════════════════
+
+ALLOWED_IMAGE_TYPES = {"image/jpeg", "image/png", "image/gif", "image/webp"}
+MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5MB
+
+
+@app.post("/api/uploads/image")
+async def upload_image(file: UploadFile = File(...), _admin: str = Depends(auth.get_current_admin)):
+    if file.content_type not in ALLOWED_IMAGE_TYPES:
+        raise HTTPException(status_code=400, detail="只支援 JPEG、PNG、GIF、WebP 圖片")
+    data = await file.read()
+    if len(data) > MAX_IMAGE_SIZE:
+        raise HTTPException(status_code=400, detail="圖片大小不可超過 5MB")
+    ext = os.path.splitext(file.filename or "")[1].lower() or ".jpg"
+    try:
+        url = storage.upload_image(data, file.content_type, ext)
+    except Exception:
+        raise HTTPException(status_code=503, detail="圖片上傳服務目前無法使用，請確認 R2 設定是否正確")
+    return {"url": url}
 
 
 # ══════════════════════════════════════════════════════════
